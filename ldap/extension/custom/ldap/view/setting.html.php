@@ -9,7 +9,7 @@
  * @version     $Id$
  * @link        http://www.zentao.net
  */
-include '../../common/view/header.html.php';
+include '../../../../module/common/view/header.html.php';
 ?>
 <div class='container mw-700px'>
   <div id='titlebar'>
@@ -77,4 +77,4 @@ include '../../common/view/header.html.php';
     </table>
   </form>
 </div>
-<?php include '../../common/view/footer.html.php';?>
+<?php include '../../../../module/common/view/footer.html.php';?>
