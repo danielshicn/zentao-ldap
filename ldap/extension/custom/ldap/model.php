@@ -14,20 +14,20 @@ class ldapModel extends model
     public function identify($host, $dn, $pwd)
     {
         $ret = '';
-    	$ds = ldap_connect($host);
-    	if ($ds) {
-    		ldap_set_option($ds,LDAP_OPT_PROTOCOL_VERSION,3);
-    		ldap_bind($ds, $dn, $pwd);
+        $ds = ldap_connect($host);
+        if ($ds) {
+            ldap_set_option($ds,LDAP_OPT_PROTOCOL_VERSION,3);
+            ldap_bind($ds, $dn, $pwd);
 
             $ret = ldap_error($ds);
-    		ldap_close($ds);
-    	}  else {
+            ldap_close($ds);
+        }  else {
             $ret = ldap_error($ds);
         }
 
-    	return $ret;
+        return $ret;
     }
-    public function getUserDn($config, $account){
+    public function getUser($config, $account){
         $ret = null;
         $ds = ldap_connect($config->host);
         if ($ds) {
@@ -39,7 +39,7 @@ class ldapModel extends model
 
             if($count > 0){
                 $data = ldap_get_entries($ds, $rlt);
-                $ret = $data[0]['dn'];
+                $ret = $data[0];
                 $str = serialize($data);
             }
 
@@ -72,14 +72,15 @@ class ldapModel extends model
         $account = '';
         $i=0;
         for (; $i < $ldapUsers['count']; $i++) {         
-            $user->account = $ldapUsers[$i][$config->uid][0];
+            $user->ldap_account = $ldapUsers[$i][$config->uid][0];
             $user->email = $ldapUsers[$i][$config->mail][0];
             $user->realname = $ldapUsers[$i][$config->name][0];
 
-            $account = $this->dao->select('*')->from(TABLE_USER)->where('account')->eq($user->account)->fetch('account');
-            if ($account == $user->account) {
-                $this->dao->update(TABLE_USER)->data($user)->where('account')->eq($user->account)->autoCheck()->exec();
+            $account = $this->dao->select('*')->from(TABLE_USER)->where('ldap_account')->eq($user->account)->fetch('account');
+            if ($account == $user->ldap_account) {
+                $this->dao->update(TABLE_USER)->data($user)->where('ldap_account')->eq($user->ldap_account)->autoCheck()->exec();
             } else {
+                $user->account = $user->ldap_account;
                 $this->dao->insert(TABLE_USER)->data($user)->autoCheck()->exec();
             }
 
