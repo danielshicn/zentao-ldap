@@ -57,7 +57,8 @@ class ldapModel extends model
 
             $attrs = [$config->uid, $config->mail, $config->name];
 
-            $rlt = ldap_search($ds, $config->baseDN, $config->searchFilter, $attrs);
+            // $rlt = ldap_search($ds, $config->baseDN, $config->searchFilter, $attrs);
+            $rlt = ldap_search($ds, $config->baseDN, $config->searchFilter);
             $data = ldap_get_entries($ds, $rlt);
             return $data;
         }
@@ -71,14 +72,19 @@ class ldapModel extends model
         $user = new stdclass();
         $account = '';
         $i=0;
-        for (; $i < $ldapUsers['count']; $i++) {         
+        for (; $i < $ldapUsers['count']; $i++) {
             $user->ldap_account = $ldapUsers[$i][$config->uid][0];
             $user->email = $ldapUsers[$i][$config->mail][0];
             $user->realname = $ldapUsers[$i][$config->name][0];
 
-            $account = $this->dao->select('*')->from(TABLE_USER)->where('ldap_account')->eq($user->account)->fetch('account');
-            if ($account == $user->ldap_account) {
-                $this->dao->update(TABLE_USER)->data($user)->where('ldap_account')->eq($user->ldap_account)->autoCheck()->exec();
+            $account = $this->dao->select('*')->from(TABLE_USER)->where('ldap_account')->eq($user->ldap_account)->fetch('account');
+            if ($account != null && $account != '') {
+                $user->account = $account;
+                $this->dao->update(TABLE_USER)
+                    ->data($user)
+                    ->where('account')->eq($account)
+                    ->autoCheck()
+                    ->exec();
             } else {
                 $user->account = $user->ldap_account;
                 $this->dao->insert(TABLE_USER)->data($user)->autoCheck()->exec();
